@@ -91,7 +91,7 @@ func (l *Logger) clone() *Logger {
 
 func (l *Logger) WithContext(s map[string]string) *Logger {
 	c := l.clone()
-	context := ""
+	context := l.contextMessage
 	for k, v := range s {
 		context = fmt.Sprintf("%s %s=%s", context, k, v)
 	}
