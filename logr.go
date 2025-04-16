@@ -37,6 +37,7 @@ type Logger struct {
 	Level Level
 	*log.Logger
 	contextMessage string
+	LogSource      bool
 }
 
 var (
@@ -71,10 +72,16 @@ func NewLogger() *Logger {
 		l,
 		logger,
 		"",
+		false,
 	}
 }
 
 func (l *Logger) log(lvl Level, s interface{}) {
+	_, file, line, _ := runtime.Caller(2)
+	if l.LogSource {
+		l.Logger.SetPrefix(fmt.Sprintf("file=%s line=%d ", file, line))
+	}
+
 	if lvl.val <= l.Level.val {
 		if l.contextMessage != "" {
 			l.Printf(`timestamp=%s level=%s msg=%q%s`, time.Now().Format(format), lvl.name, s, l.contextMessage)
