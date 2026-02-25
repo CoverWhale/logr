@@ -42,18 +42,22 @@ type Logger struct {
 
 var (
 	ErrorLevel = Level{val: 0, name: "ERROR"}
-	InfoLevel  = Level{val: 1, name: "INFO"}
-	DebugLevel = Level{val: 2, name: "DEBUG"}
+	WarnLevel  = Level{val: 1, name: "WARN"}
+	InfoLevel  = Level{val: 2, name: "INFO"}
+	DebugLevel = Level{val: 3, name: "DEBUG"}
+	TraceLevel = Level{val: 4, name: "TRACE"}
 )
 
 func getLevel(l string) Level {
 	switch strings.ToLower(l) {
 	case "error":
 		return ErrorLevel
+	case "warn":
+		return WarnLevel
 	case "debug":
 		return DebugLevel
-	case "info":
-		return InfoLevel
+	case "trace":
+		return TraceLevel
 	default:
 		return InfoLevel
 	}
@@ -79,7 +83,7 @@ func NewLogger() *Logger {
 func (l *Logger) log(lvl Level, s interface{}) {
 	_, file, line, _ := runtime.Caller(2)
 	if l.LogSource {
-		l.Logger.SetPrefix(fmt.Sprintf("file=%s line=%d ", file, line))
+		l.SetPrefix(fmt.Sprintf("file=%s line=%d ", file, line))
 	}
 
 	if lvl.val <= l.Level.val {
@@ -113,8 +117,7 @@ func (l *Logger) Error(s interface{}) {
 }
 
 func (l *Logger) Errorf(format string, s ...interface{}) {
-	f := fmt.Sprintf(`%s`, format)
-	m := fmt.Sprintf(f, s...)
+	m := fmt.Sprintf(format, s...)
 	l.log(ErrorLevel, m)
 }
 
@@ -122,10 +125,23 @@ func (l *Logger) Info(s interface{}) {
 	l.log(InfoLevel, s)
 }
 
+func (l *Logger) Warn(s interface{}) {
+	l.log(WarnLevel, s)
+}
+func (l *Logger) Warnf(f string, s ...interface{}) {
+	l.log(WarnLevel, fmt.Sprintf(f, s...))
+}
+
+func (l *Logger) Trace(s interface{}) {
+	l.log(TraceLevel, s)
+}
+
+func (l *Logger) Tracef(f string, s ...interface{}) {
+	l.log(TraceLevel, fmt.Sprintf(f, s...))
+}
+
 func (l *Logger) Infof(format string, s ...interface{}) {
-	f := fmt.Sprintf(`%s`, format)
-	m := fmt.Sprintf(f, s...)
-	l.log(InfoLevel, m)
+	l.log(InfoLevel, fmt.Sprintf(format, s...))
 }
 
 func (l *Logger) Debug(s interface{}) {
@@ -133,9 +149,7 @@ func (l *Logger) Debug(s interface{}) {
 }
 
 func (l *Logger) Debugf(format string, s ...interface{}) {
-	f := fmt.Sprintf(`%s`, format)
-	m := fmt.Sprintf(f, s...)
-	l.log(DebugLevel, m)
+	l.log(DebugLevel, fmt.Sprintf(format, s...))
 }
 
 func (l *Logger) Fatal(s interface{}) {
